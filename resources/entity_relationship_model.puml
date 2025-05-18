@@ -1,0 +1,33 @@
+@startuml
+Entity order {
+id
+order_form_id <<FK>>
+customer_id <<FK>>
+}
+
+Entity payment {
+id
+order_id <<FK>>
+status <<enum>>
+}
+
+Entity delivery {
+id
+order_id <<FK>>
+delivery_number
+status <<enum>>
+customer_address_id <<FK>>
+}
+
+Entity delivery_event {
+id
+delivery_id <<FK>>
+source <<enum>>
+status <<enum>>
+}
+
+order ||--o{ delivery : has
+order ||--|| payment : has
+delivery ||--o{ delivery_event : has
+
+@enduml

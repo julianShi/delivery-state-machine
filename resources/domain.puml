@@ -1,0 +1,11 @@
+@startuml
+actor customer
+component payment
+component delivery
+component partner
+customer -down-> payment: pay
+payment --> delivery: paid
+delivery -down-> partner: create
+partner -up-> delivery: delivered
+customer -down-> delivery: confirm\nreceived
+@enduml

@@ -1,0 +1,9 @@
+@startuml
+(*) -down->[order paid] CREATED
+-down->[partner picked up] PICKED_UP
+-down->[package delivered] DELIVERED
+-down->[confirmed by customer] DELIVERY_CONFIRMED
+-down-> (*)
+PICKED_UP ->[invalid address] DELIVERY_FAILED
+DELIVERY_FAILED -down->[operator step in] PENDING_BY_OPERATOR
+@enduml
