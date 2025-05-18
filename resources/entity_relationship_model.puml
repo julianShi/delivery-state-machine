@@ -1,33 +1,74 @@
 @startuml
-Entity order {
-id
-order_form_id <<FK>>
-customer_id <<FK>>
+!define table(x) class x << (T,#FFAAAA) >>
+!define primary_key(x) <u>x</u>
+!define foreign_key(x) #x#
+
+' Styling
+skinparam class {
+    BackgroundColor White
+    ArrowColor Black
+    BorderColor Black
 }
 
-Entity payment {
-id
-order_id <<FK>>
-status <<enum>>
+' Entities
+table(order) {
+    primary_key(id): UUID
+    foreign_key(order_form_id): UUID
+    foreign_key(customer_id): UUID
+    created_at: DateTime
+    updated_at: DateTime
+    total_amount: Decimal
+    currency: String
+    status: Enum<OrderStatus>
 }
 
-Entity delivery {
-id
-order_id <<FK>>
-delivery_number
-status <<enum>>
-customer_address_id <<FK>>
+table(payment) {
+    primary_key(id): UUID
+    foreign_key(order_id): UUID
+    status: Enum<PaymentStatus>
+    amount: Decimal
+    payment_method: String
+    transaction_id: String
+    created_at: DateTime
+    updated_at: DateTime
 }
 
-Entity delivery_event {
-id
-delivery_id <<FK>>
-source <<enum>>
-status <<enum>>
+table(delivery) {
+    primary_key(id): UUID
+    foreign_key(order_id): UUID
+    delivery_number: String
+    status: Enum<DeliveryStatus>
+    foreign_key(customer_address_id): UUID
+    estimated_delivery_time: DateTime
+    actual_delivery_time: DateTime
+    created_at: DateTime
+    updated_at: DateTime
 }
 
-order ||--o{ delivery : has
-order ||--|| payment : has
-delivery ||--o{ delivery_event : has
+table(delivery_event) {
+    primary_key(id): UUID
+    foreign_key(delivery_id): UUID
+    source: Enum<EventSource>
+    status: Enum<EventStatus>
+    description: String
+    created_at: DateTime
+    metadata: JSON
+}
+
+' Relationships
+order ||--o{ delivery : "has"
+order ||--|| payment : "has"
+delivery ||--o{ delivery_event : "has"
+
+' Notes
+note right of order
+  An order can have multiple deliveries
+  but only one payment
+end note
+
+note right of delivery
+  Each delivery can have multiple
+  tracking events
+end note
 
 @enduml
