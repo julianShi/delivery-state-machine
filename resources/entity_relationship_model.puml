@@ -10,6 +10,30 @@ skinparam class {
     BorderColor Black
 }
 
+' Enums
+enum DeliveryOrderStatus {
+    CREATED
+    PICKED_UP
+    DELIVERED
+    DELIVERY_CONFIRMED
+    DELIVERY_FAILED
+    PENDING_BY_OPERATOR
+}
+
+enum DeliveryFailureReason {
+    INCORRECT_ADDRESS
+    CUSTOMER_NOT_AVAILABLE
+    PACKAGE_DAMAGED
+    OTHER
+}
+
+enum EventSource {
+    DELIVERY_PARTNER
+    CUSTOMER
+    OPERATOR
+    SYSTEM
+}
+
 ' Entities
 table(order) {
     primary_key(id): UUID
@@ -33,42 +57,52 @@ table(payment) {
     updated_at: DateTime
 }
 
-table(delivery) {
+table(delivery_order) {
     primary_key(id): UUID
     foreign_key(order_id): UUID
     delivery_number: String
-    status: Enum<DeliveryStatus>
+    status: Enum<DeliveryOrderStatus>
     foreign_key(customer_address_id): UUID
+    failure_reason: Enum<DeliveryFailureReason>
     estimated_delivery_time: DateTime
     actual_delivery_time: DateTime
     created_at: DateTime
     updated_at: DateTime
+    operator_id: UUID
+    operator_notes: String
 }
 
-table(delivery_event) {
+table(delivery_state_event) {
     primary_key(id): UUID
     foreign_key(delivery_id): UUID
     source: Enum<EventSource>
-    status: Enum<EventStatus>
+    from_status: Enum<DeliveryOrderStatus>
+    to_status: Enum<DeliveryOrderStatus>
+    failure_reason: Enum<DeliveryFailureReason>
     description: String
     created_at: DateTime
     metadata: JSON
 }
 
 ' Relationships
-order ||--o{ delivery : "has"
+order ||--o{ delivery_order : "has"
 order ||--|| payment : "has"
-delivery ||--o{ delivery_event : "has"
+delivery_order ||--o{ delivery_state_event : "has"
 
 ' Notes
 note right of order
-  An order can have multiple deliveries
+  An order can have multiple delivery orders
   but only one payment
 end note
 
-note right of delivery
-  Each delivery can have multiple
-  tracking events
+note right of delivery_order
+  Each delivery order tracks its state
+  transitions through delivery_state_events
+end note
+
+note right of delivery_state_event
+  Records every state change with
+  source and reason
 end note
 
 @enduml

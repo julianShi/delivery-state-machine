@@ -9,8 +9,8 @@ Each domain is managed by a domain owner and supported by one or more microservi
 The microservices of other related domains all provide basic RESTFUL APIs for CRUD operations, and message queues for notifications. The details of the other domains are not in this doc. 
 
 Read
-- The core domains related to the delivery domain [domain.puml](resources/domain.puml)
-- The entity relation model of the core domains and core entities in [entity_relationship_model.puml](resources/entity_relationship_model.puml)
+- The core domains related to the delivery domain ![domain.png](resources/domain.png)
+- The entity relation model of the core domains and core entities in ![entity_relationship_model.png](resources/entity_relationship_model.png)
 
 ## System Architecture
 

@@ -1,11 +1,50 @@
 @startuml
+!define RECTANGLE component
+
+' Actors
 actor customer
-component payment
-component delivery
-component partner
-customer -down-> payment: pay
-payment --> delivery: paid
-delivery -down-> partner: create
-partner -up-> delivery: delivered
-customer -down-> delivery: confirm\nreceived
+actor operator
+actor delivery_partner
+
+' Core Components
+package "Delivery State Machine Service" {
+    RECTANGLE "API Layer" as api
+    RECTANGLE "State Machine Engine" as state_machine
+    RECTANGLE "Event Processor" as event_processor
+}
+
+' External Services
+package "External Services" {
+    RECTANGLE "Payment Service" as payment
+    RECTANGLE "Order Management Service" as order_management
+    RECTANGLE "Customer Service" as customer_service
+    RECTANGLE "Third-party Delivery Partner API" as partner_api
+}
+
+' Core Business Flows
+customer --> api: "1. Confirm Delivery"
+operator --> api: "2. Handle Issues"
+delivery_partner --> partner_api: "3. Update Status"
+
+' Event Flows
+payment --> state_machine: "4. Payment Success"
+order_management --> state_machine: "5. Order Created"
+state_machine --> order_management: "6. Delivery Confirmed"
+
+' State Machine Interactions
+state_machine --> partner_api: "7. Create Delivery"
+partner_api --> state_machine: "8. Delivery Updates"
+state_machine --> event_processor: "9. Process Events"
+
+' Notes
+note right of state_machine
+  Manages delivery state
+  transitions and rules
+end note
+
+note right of event_processor
+  Handles async event
+  processing
+end note
+
 @enduml
