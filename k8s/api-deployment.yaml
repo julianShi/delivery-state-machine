@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: delivery-state-machine-api
+  labels:
+    app: delivery-state-machine-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: delivery-state-machine-api
+  template:
+    metadata:
+      labels:
+        app: delivery-state-machine-api
+    spec:
+      containers:
+      - name: api
+        image: delivery-state-machine-api:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+        resources:
+          requests:
+            cpu: "1"
+            memory: "1Gi"
+          limits:
+            cpu: "2"
+            memory: "2Gi"
+        envFrom:
+        - configMapRef:
+            name: delivery-state-machine-config
+        env:
+        - name: DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: username
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: password
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: delivery-state-machine-api
+spec:
+  selector:
+    app: delivery-state-machine-api
+  ports:
+  - port: 80
+    targetPort: 8000
+  type: LoadBalancer 

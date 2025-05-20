@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: delivery-state-machine-worker
+  labels:
+    app: delivery-state-machine-worker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: delivery-state-machine-worker
+  template:
+    metadata:
+      labels:
+        app: delivery-state-machine-worker
+    spec:
+      containers:
+      - name: worker
+        image: delivery-state-machine-worker:latest
+        imagePullPolicy: Always
+        command: ["celery"]
+        args: ["-A", "app.worker.worker", "worker", "--loglevel=info"]
+        resources:
+          requests:
+            cpu: "1"
+            memory: "1Gi"
+          limits:
+            cpu: "2"
+            memory: "2Gi"
+        envFrom:
+        - configMapRef:
+            name: delivery-state-machine-config
+        env:
+        - name: DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: username
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: password
+        livenessProbe:
+          exec:
+            command:
+            - celery
+            - -A
+            - app.worker.worker
+            - inspect
+            - ping
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - celery
+            - -A
+            - app.worker.worker
+            - inspect
+            - ping
+          initialDelaySeconds: 5
+          periodSeconds: 5 
